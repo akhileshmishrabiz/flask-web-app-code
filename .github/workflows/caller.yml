@@ -18,8 +18,8 @@ jobs:
       - name: Trigger Workflow in Another Repository
         run: |
           # Set the required variables
-          repo_owner="REPOSITORY OWNER" 
-          repo_name="REPOSITORY NAME"  
+          repo_owner="akhileshmishrabiz" 
+          repo_name="web-app-on-aws-ecs"  
           event_type="trigger-workflow" 
           service=${{ github.event.inputs.target_service }}"
           version="${{ github.event.inputs.target_version }}"
