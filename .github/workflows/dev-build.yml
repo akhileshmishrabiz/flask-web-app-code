@@ -26,37 +26,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
-        if: ${{ github.ref == 'refs/heads/main' }}
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.region }}
+      # - name: Configure AWS Credentials
+      #   if: ${{ github.ref == 'refs/heads/main' }}
+      #   uses: aws-actions/configure-aws-credentials@v3
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: ${{ env.region }}
 
-      - name: Fetch secrets from AWS Secrets Manager
-        id: fetch-secrets
-        uses: aws-actions/aws-secretsmanager-get-secrets@v2
-        with:
-          secret-ids: |
-            ,${{ env.environment }}-${{ env.secret }}
-          parse-json-secrets: true
+      # - name: Fetch secrets from AWS Secrets Manager
+      #   id: fetch-secrets
+      #   uses: aws-actions/aws-secretsmanager-get-secrets@v2
+      #   with:
+      #     secret-ids: |
+      #       ,${{ env.environment }}-${{ env.secret }}
+      #     parse-json-secrets: true
 
-      - name: Build docker container
-        uses: docker/build-push-action@v6
-        with:
-          context: "{{defaultContext}}:app"
-          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          build-args: APP_VERSION=${{ github.sha }}
-          push: false
+      # - name: Build docker container
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: "{{defaultContext}}:app"
+      #     tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+      #     build-args: APP_VERSION=${{ github.sha }}
+      #     push: false
 
-      - name: Login to Amazon ECR
-        if: ${{ github.ref == 'refs/heads/main' }}
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-        with:
-          mask-password: true
-          registries: ${{ env.ACCOUNT_ID }}
+      # - name: Login to Amazon ECR
+      #   if: ${{ github.ref == 'refs/heads/main' }}
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v2
+      #   with:
+      #     mask-password: true
+      #     registries: ${{ env.ACCOUNT_ID }}
 
       # - name: Push image to Amazon ECR
       #   if: ${{ github.ref == 'refs/heads/main' }}
