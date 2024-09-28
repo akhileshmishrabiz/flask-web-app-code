@@ -1,17 +1,18 @@
-name: "Dev App Build, Test and Release"
+name: "Dev build and push"
 
 on:
-  # push:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - app/**
+  push:
+    branches:
+      - main
+    paths:
+      - app/**
   workflow_dispatch:
 
 env:
   environment: "dev"
   region: "ap-south-1"
   secret: "app-deploy-data"
+  workflow_id: "dev-image-build"
 
 jobs:
   build:
@@ -41,14 +42,6 @@ jobs:
             ,${{ env.environment }}-${{ env.secret }}
           parse-json-secrets: true
 
-      - name: Print GITHUB_ENV
-        run: cat $GITHUB_ENV 
-
-      - name: test env names
-        run: |
-         echo ${{ env.ECR_REGISTRY }}
-         echo ${{ env.ECS_CLUSTER }}
-
       - name: Build docker container
         uses: docker/build-push-action@v6
         with:
@@ -77,27 +70,20 @@ jobs:
           docker tag $IMAGE_NAME:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY --all-tags
 
-      - name: Download task definition for web
-        if: ${{ github.ref == 'refs/heads/main' }}
+      - name: Trigger Deploy Workflow in Another Repository
         run: |
-          aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION }} \
-          --query taskDefinition > task-definition.json
-          ls -l task-definition.json
-
-      - name: Fill in the new image ID for web in the Amazon ECS task definition
-        if: ${{ github.ref == 'refs/heads/main' }}
-        id: task-def-web
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: task-definition.json
-          container-name: ${{ env.ECS_APP_CONTAINER_NAME }}
-          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-
-      - name: Deploy app on Amazon ECS task definition
-        if: ${{ github.ref == 'refs/heads/main' }}
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.task-def-web.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
+          # Set the required variables
+          repo_owner="akhileshmishrabiz" 
+          repo_name="web-app-on-aws-ecs"  
+          event_type="trigger-workflow" 
+          image_tag="${{ env.IMAGE_TAG }}"
+          workflow_id="${{ env.workflow_id }}"
+  
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PAT }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/$repo_owner/$repo_name/dispatches \
+            -d "{\"event_type\": \"$event_type\", \"client_payload\": {\"workflow_id\": \"$workflow_id\", \"image_tag\": \"$image_tag\", \"unit\": false, \"integration\": true}}"
+        shell: bash
