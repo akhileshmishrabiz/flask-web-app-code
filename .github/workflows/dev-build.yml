@@ -1,11 +1,11 @@
 name: "Dev build and push"
 
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - app/**
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths:
+#       - app/**
   workflow_dispatch:
 
 env:
