@@ -1,11 +1,11 @@
 name: "Dev build and push"
 
-# on:
-#   push:
-#     branches:
-#       - main
-#     paths:
-#       - app/**
+on:
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - app/**
   workflow_dispatch:
 
 env:
@@ -38,7 +38,7 @@ jobs:
         uses: aws-actions/aws-secretsmanager-get-secrets@v2
         with:
           secret-ids: |
-            ,${{ env.environment }}-${{ env.deployment_info }}
+            ,${{ env.environment }}-${{ env.secret }}
           parse-json-secrets: true
 
       - name: Build docker container
