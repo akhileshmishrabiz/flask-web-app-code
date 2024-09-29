@@ -38,7 +38,7 @@ jobs:
         uses: aws-actions/aws-secretsmanager-get-secrets@v2
         with:
           secret-ids: |
-            ,${{ env.environment }}-${{ env.secret }}
+            ,${{ env.environment }}-${{ env.deployment_info }}
           parse-json-secrets: true
 
       - name: Build docker container
