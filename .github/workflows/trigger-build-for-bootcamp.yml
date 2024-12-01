@@ -1,4 +1,4 @@
-name: "Dev build and push"
+name: "Dev build, push and trigger the remote workflow"
 
 on:
   workflow_dispatch:
